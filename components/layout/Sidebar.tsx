@@ -14,6 +14,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Users,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -31,12 +33,25 @@ interface SidebarProps {
   setMobileOpen?: (open: boolean) => void;
 }
 
+const filteredNavigation = (userRole: string) => {
+  return navigation.filter(item => {
+    if (item.adminOnly && userRole !== "admin") return false;
+    return true;
+  });
+};
+
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Inventory", href: "/dashboard/inventory", icon: Package },
   { name: "Point of Sale", href: "/dashboard/pos", icon: ShoppingCart },
   { name: "Sales", href: "/dashboard/sales", icon: Receipt },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
+  { name: "Users", href: "/dashboard/users", icon: Users, adminOnly: true },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+
+const adminNavigation = [
+  { name: "Users", href: "/dashboard/users", icon: Users },
 ];
 
 export function Sidebar({ user, onLogout, mobileOpen: externalMobileOpen, setMobileOpen: externalSetMobileOpen }: SidebarProps) {
@@ -53,11 +68,13 @@ export function Sidebar({ user, onLogout, mobileOpen: externalMobileOpen, setMob
     }
   };
 
+  const visibleNav = filteredNavigation(user.role);
+
   const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <>
       <div className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin">
         <div className="space-y-1">
-          {navigation.map((item) => {
+          {visibleNav.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link

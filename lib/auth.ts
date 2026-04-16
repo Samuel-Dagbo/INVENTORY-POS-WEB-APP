@@ -17,6 +17,12 @@ function getJwtSecret() {
 const JWT_SECRET = getJwtSecret() || "your-super-secret-jwt-key-change-this-in-production";
 const COOKIE_NAME = "auth_token";
 
+export interface TokenPayload {
+  userId: string;
+  role: string;
+  email: string;
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
 }
@@ -28,12 +34,11 @@ export async function verifyPassword(
   return bcrypt.compare(password, hashedPassword);
 }
 
-export function generateToken(userId: string): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+export function generateToken(userId: string, role: string, email: string): string {
+  return jwt.sign({ userId, role, email }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-export function verifyToken(token: string): { userId: string } | null {
-  // Try multiple secrets to handle env loading issues
+export function verifyToken(token: string): TokenPayload | null {
   const secrets = [
     process.env.JWT_SECRET,
     "your-super-secret-jwt-key-change-this-in-production",
@@ -42,7 +47,7 @@ export function verifyToken(token: string): { userId: string } | null {
 
   for (const secret of secrets) {
     try {
-      const payload = jwt.verify(token, secret as string) as { userId: string };
+      const payload = jwt.verify(token, secret as string) as TokenPayload;
       return payload;
     } catch {
       continue;

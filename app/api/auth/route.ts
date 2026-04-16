@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         role: role || "cashier",
       });
 
-      const token = generateToken(user._id.toString());
+      const token = generateToken(user._id.toString(), user.role, user.email);
       const response = NextResponse.json(
         { message: "User created", user: { id: user._id, email: user.email, name: user.name, role: user.role } },
         { status: 201 }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = generateToken(user._id.toString());
+    const token = generateToken(user._id.toString(), user.role, user.email);
     const response = NextResponse.json({
       user: { id: user._id, email: user.email, name: user.name, role: user.role },
     });

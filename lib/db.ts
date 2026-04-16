@@ -47,3 +47,4 @@ export async function connectDB() {
 }
 
 export default connectDB;
+export const getDb = connectDB;
