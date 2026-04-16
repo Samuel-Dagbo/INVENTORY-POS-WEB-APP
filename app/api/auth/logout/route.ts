@@ -1,0 +1,18 @@
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { COOKIE_NAME } from "@/lib/auth";
+
+export async function POST() {
+  try {
+    const cookieStore = cookies();
+    cookieStore.delete(COOKIE_NAME);
+
+    return NextResponse.json({ message: "Logged out" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
