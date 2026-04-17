@@ -27,7 +27,7 @@ export default function DashboardLayout({
           const data = await res.json();
           setUser(data.user);
         } else {
-          window.location.href = "/auth/login";
+window.location.href = "/";
         }
       } catch {
         window.location.href = "/auth/login";
