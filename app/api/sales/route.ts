@@ -19,7 +19,6 @@ const saleItemSchema = z.object({
 const saleSchema = z.object({
   items: z.array(saleItemSchema).min(1),
   subtotal: z.number().min(0),
-  tax: z.number().min(0).optional(),
   discount: z.number().min(0).optional(),
   total: z.number().min(0),
   paymentMode: z.enum(["cash", "card", "mobile_money", "other"]),
@@ -29,6 +28,11 @@ const saleSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");

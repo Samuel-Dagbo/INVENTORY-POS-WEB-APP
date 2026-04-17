@@ -19,7 +19,6 @@ export default function NewProductPage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    SKU: "",
     barcode: "",
     category: "",
     costPrice: "",
@@ -54,7 +53,6 @@ export default function NewProductPage() {
     try {
       const payload = {
         name: formData.name,
-        SKU: formData.SKU,
         barcode: formData.barcode || undefined,
         category: formData.category,
         costPrice: parseFloat(formData.costPrice),
@@ -127,13 +125,12 @@ export default function NewProductPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="SKU">SKU *</Label>
+                <Label htmlFor="barcode">Barcode (Optional)</Label>
                 <Input
-                  id="SKU"
-                  value={formData.SKU}
-                  onChange={(e) => handleChange("SKU", e.target.value)}
-                  placeholder="MILK-001"
-                  required
+                  id="barcode"
+                  value={formData.barcode}
+                  onChange={(e) => handleChange("barcode", e.target.value)}
+                  placeholder="123456789001"
                 />
               </div>
             </div>
@@ -179,44 +176,44 @@ export default function NewProductPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="costPrice">Cost Price *</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    $
-                  </span>
-                  <Input
-                    id="costPrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.costPrice}
-                    onChange={(e) => handleChange("costPrice", e.target.value)}
-                    placeholder="0.00"
-                    className="pl-7"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sellingPrice">Selling Price *</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    $
-                  </span>
-                  <Input
-                    id="sellingPrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.sellingPrice}
-                    onChange={(e) => handleChange("sellingPrice", e.target.value)}
-                    placeholder="0.00"
-                    className="pl-7"
-                    required
-                  />
-                </div>
-              </div>
+               <div className="space-y-2">
+                 <Label htmlFor="costPrice">Cost Price *</Label>
+                 <div className="relative">
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                     GH₵
+                   </span>
+                   <Input
+                     id="costPrice"
+                     type="number"
+                     step="0.01"
+                     min="0"
+                     value={formData.costPrice}
+                     onChange={(e) => handleChange("costPrice", e.target.value)}
+                     placeholder="0.00"
+                     className="pl-8"
+                     required
+                   />
+                 </div>
+               </div>
+               <div className="space-y-2">
+                 <Label htmlFor="sellingPrice">Selling Price *</Label>
+                 <div className="relative">
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                     GH₵
+                   </span>
+                   <Input
+                     id="sellingPrice"
+                     type="number"
+                     step="0.01"
+                     min="0"
+                     value={formData.sellingPrice}
+                     onChange={(e) => handleChange("sellingPrice", e.target.value)}
+                     placeholder="0.00"
+                     className="pl-8"
+                     required
+                   />
+                 </div>
+               </div>
             </div>
           </CardContent>
         </Card>

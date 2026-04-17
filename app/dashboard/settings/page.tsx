@@ -240,11 +240,11 @@ export default function SettingsPage() {
                     <p className="text-sm text-slate-500">Play sound on new sale</p>
                   </div>
                   <Button
-                    variant={notificationSettings.soundEffects ? "default" : "outline"}
-                    onClick={() => setNotificationSettings({ ...notificationSettings, soundEffects: !notificationSettings.soundEffects })}
+                    variant={posSettings.soundEffects ? "default" : "outline"}
+                    onClick={() => setPosSettings({ ...posSettings, soundEffects: !posSettings.soundEffects })}
                     className="rounded-xl"
                   >
-                    {notificationSettings.soundEffects ? "Enabled" : "Disabled"}
+                    {posSettings.soundEffects ? "Enabled" : "Disabled"}
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">

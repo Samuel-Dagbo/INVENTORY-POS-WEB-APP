@@ -6,7 +6,6 @@ import { getUserFromRequest } from "@/lib/auth";
 
 const productSchema = z.object({
   name: z.string().min(1),
-  SKU: z.string().min(1),
   barcode: z.string().optional(),
   category: z.string().min(1),
   costPrice: z.number().min(0),
@@ -18,6 +17,11 @@ const productSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search");
@@ -33,7 +37,6 @@ export async function GET(request: NextRequest) {
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },
-        { SKU: { $regex: search, $options: "i" } },
         { barcode: { $regex: search, $options: "i" } },
       ];
     }
@@ -80,14 +83,6 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
-
-    const existingSku = await Product.findOne({ SKU: parsed.data.SKU });
-    if (existingSku) {
-      return NextResponse.json(
-        { error: "SKU already exists" },
-        { status: 400 }
-      );
-    }
 
     if (parsed.data.barcode) {
       const existingBarcode = await Product.findOne({ barcode: parsed.data.barcode });

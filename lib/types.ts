@@ -1,7 +1,6 @@
 export interface IProduct {
   _id: string;
   name: string;
-  SKU: string;
   barcode?: string;
   category: string;
   costPrice: number;
@@ -26,7 +25,6 @@ export interface IUser {
 export interface ISaleItem {
   productId: string;
   name: string;
-  SKU: string;
   quantity: number;
   unitPrice: number;
   costPrice: number;

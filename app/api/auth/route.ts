@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        role: role || "cashier",
+        role: "admin",
       });
 
       const token = generateToken(user._id.toString(), user.role, user.email);

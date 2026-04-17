@@ -237,9 +237,9 @@ export default function UsersPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
+                     <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                       {user.name ? user.name.charAt(0).toUpperCase() : "?"}
+                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{user.name}</h3>

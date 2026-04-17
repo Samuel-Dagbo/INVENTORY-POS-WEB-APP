@@ -8,21 +8,24 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(request: NextRequest, params: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
-    const token = request.cookies.get("token")?.value;
+    const token = request.cookies.get("auth_token")?.value;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decoded = verifyToken(token);
-    if (!decoded || (decoded.role !== "admin" && decoded.userId !== (await params).id)) {
+    const { id } = await params;
+
+    if (!decoded || (decoded.role !== "admin" && decoded.userId !== id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await getDb();
-    const { id } = await params;
-
     const user = await User.findById(id).select("-password").lean();
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -35,9 +38,12 @@ export async function GET(request: NextRequest, params: RouteParams) {
   }
 }
 
-export async function PUT(request: NextRequest, params: RouteParams) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
-    const token = request.cookies.get("token")?.value;
+    const token = request.cookies.get("auth_token")?.value;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -72,9 +78,12 @@ export async function PUT(request: NextRequest, params: RouteParams) {
   }
 }
 
-export async function DELETE(request: NextRequest, params: RouteParams) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
-    const token = request.cookies.get("token")?.value;
+    const token = request.cookies.get("auth_token")?.value;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

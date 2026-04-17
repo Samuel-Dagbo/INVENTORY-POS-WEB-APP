@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, Plus, Minus, ShoppingCart, AlertCircle, Search, Grid3X3, LayoutGrid } from "lucide-react";
+import { Package, ShoppingCart, AlertCircle, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProductGridProps {
@@ -21,7 +21,6 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export function ProductGrid({ onAddToCart }: ProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [addingProduct, setAddingProduct] = useState<string | null>(null);
 
   const { data, isLoading } = useSWR<{
@@ -35,26 +34,16 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
     const matchesSearch = searchQuery === "" ||
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.SKU.toLowerCase().includes(searchQuery.toLowerCase());
+      (product.barcode && product.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  const handleQuantityChange = (productId: string, delta: number) => {
-    setQuantities((prev) => {
-      const current = prev[productId] || 1;
-      const newQty = Math.max(1, current + delta);
-      return { ...prev, [productId]: newQty };
-    });
-  };
-
   const handleAddToCart = (product: Product) => {
-    const quantity = quantities[product._id] || 1;
     setAddingProduct(product._id);
-    onAddToCart(product, quantity);
+    onAddToCart(product, 1);
     setTimeout(() => {
       setAddingProduct(null);
-      setQuantities((prev) => ({ ...prev, [product._id]: 1 }));
-    }, 300);
+    }, 200);
   };
 
   const getStockStatus = (product: Product) => {
@@ -68,53 +57,55 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-        <Input
-          placeholder="Search products by name or SKU..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-11 h-12 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-sm"
-        />
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:w-96 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+          <Input
+            placeholder="Quick search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 h-12 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-base shadow-sm transition-all focus:ring-2 focus:ring-indigo-500/20"
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
+            <TabsList className="flex h-12 p-1 bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl gap-1">
+              {categories.map((category) => (
+                <TabsTrigger 
+                  key={category} 
+                  value={category} 
+                  className="rounded-xl px-4 py-2 text-sm font-bold transition-all duration-200 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm"
+                >
+                  {category}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
-      {/* Categories Tabs */}
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="flex flex-wrap h-auto p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl gap-1">
-          {categories.map((category) => (
-            <TabsTrigger 
-              key={category} 
-              value={category} 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200"
-            >
-              {category}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value={selectedCategory} className="mt-5">
+      <Tabs value={selectedCategory} className="w-full">
+        <TabsContent value={selectedCategory} className="mt-0">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 animate-pulse">
-                  <div className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-t-2xl" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {[...Array(10)].map((_, i) => (
+                <div key={i} className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 animate-pulse">
+                  <div className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-t-3xl" />
                   <div className="p-4 space-y-3">
                     <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
-                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/2" />
                     <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-1/3" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <Card className="overflow-hidden">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center mb-6">
+            <Card className="border-dashed border-2 bg-transparent shadow-none">
+              <CardContent className="flex flex-col items-center justify-center py-20">
+                <div className="h-20 w-20 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
                   <Package className="h-10 w-10 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                   No products found
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-center max-w-md">
@@ -123,18 +114,18 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredProducts.map((product, index) => {
                 const stockStatus = getStockStatus(product);
                 const isOutOfStock = product.stockQuantity === 0;
-                const quantity = quantities[product._id] || 1;
 
                 return (
-                  <div
+                  <Card
                     key={product._id}
+                    onClick={() => !isOutOfStock && handleAddToCart(product)}
                     className={cn(
-                      "rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-200 dark:hover:border-indigo-700/50 hover:-translate-y-1",
-                      addingProduct === product._id && "ring-2 ring-indigo-500 ring-offset-2",
+                      "group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1",
+                      addingProduct === product._id && "ring-4 ring-indigo-500 ring-offset-2",
                       "animate-fade-in"
                     )}
                     style={{ animationDelay: `${index * 30}ms` }}
@@ -145,95 +136,69 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
                           src={product.imageUrl}
                           alt={product.name}
                           fill
-                          className="object-cover transition-transform duration-500 hover:scale-110"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="h-20 w-20 rounded-2xl bg-slate-200/50 dark:bg-slate-700/50 flex items-center justify-center">
-                            <Package className="h-10 w-10 text-slate-400" />
+                            <Package className="h-10 w-10 text-slate-300 dark:text-slate-600" />
                           </div>
                         </div>
                       )}
+                      
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                         <div className="text-white text-xs font-bold flex items-center gap-1">
+                           <ShoppingCart className="h-3 w-3" /> Add to Cart
+                         </div>
+                      </div>
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-
-                      <Badge 
-                        variant={stockStatus.variant} 
+                      <Badge
+                        variant={stockStatus.variant}
                         className="absolute top-3 left-3 shadow-lg"
                       >
-                        {isOutOfStock && <AlertCircle className="h-3 w-3 mr-1" />}
                         {stockStatus.label}
                       </Badge>
-
-                      <div className="absolute bottom-3 right-3">
-                        <p className="text-xs font-medium text-white bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1">
-                          Stock: {product.stockQuantity}
-                        </p>
-                      </div>
                     </div>
 
-                    <div className="p-4 space-y-3">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
                       <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+                        <h3 className="font-semibold text-slate-900 dark:text-white truncate text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                           {product.name}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          {product.category} • SKU: {product.SKU}
-                        </p>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            ${product.sellingPrice.toFixed(2)}
-                          </p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                            Cost: ${product.costPrice.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
+                        <Badge variant="secondary" className="text-xs">
+                          {product.category}
+                        </Badge>
 
-                      {isOutOfStock ? (
-                        <Button className="w-full rounded-xl" disabled>
-                          Out of Stock
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="h-8 w-8 rounded-none hover:bg-slate-100 dark:hover:bg-slate-700"
-                              onClick={() => handleQuantityChange(product._id, -1)}
-                              disabled={quantity <= 1}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-10 text-center text-sm font-semibold bg-white dark:bg-slate-900">
-                              {quantity}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="h-8 w-8 rounded-none hover:bg-slate-100 dark:hover:bg-slate-700"
-                              onClick={() => handleQuantityChange(product._id, 1)}
-                              disabled={quantity >= product.stockQuantity}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                          <div>
+                            <p className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                              GH₵{product.sellingPrice.toFixed(2)}
+                            </p>
+                            <p className="text-[10px] text-slate-400">
+                              Cost: GH₵{product.costPrice.toFixed(2)}
+                            </p>
                           </div>
-                          <Button
-                            className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/20 rounded-lg transition-all duration-200"
-                            onClick={() => handleAddToCart(product)}
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-1.5" />
-                            Add
-                          </Button>
+                          <div className="text-right">
+                            <p className={cn(
+                              "font-bold text-lg",
+                              product.stockQuantity === 0
+                                ? "text-red-500"
+                                : product.stockQuantity <= product.lowStockThreshold
+                                ? "text-amber-500"
+                                : "text-emerald-500"
+                            )}>
+                              {product.stockQuantity}
+                            </p>
+                            <p className="text-[10px] text-slate-400">in stock</p>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>

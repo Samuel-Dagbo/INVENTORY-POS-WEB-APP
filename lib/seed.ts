@@ -8,7 +8,6 @@ import { hashPassword } from "./auth";
 const seedProducts = [
   {
     name: "Organic Whole Milk",
-    SKU: "MILK-001",
     barcode: "123456789001",
     category: "Dairy",
     costPrice: 2.5,
@@ -19,7 +18,6 @@ const seedProducts = [
   },
   {
     name: "Free Range Eggs (12 pack)",
-    SKU: "EGG-001",
     barcode: "123456789002",
     category: "Dairy",
     costPrice: 3.0,
@@ -30,7 +28,6 @@ const seedProducts = [
   },
   {
     name: "Sourdough Bread",
-    SKU: "BREAD-001",
     barcode: "123456789003",
     category: "Bakery",
     costPrice: 1.5,
@@ -41,7 +38,6 @@ const seedProducts = [
   },
   {
     name: "Premium Coffee Beans",
-    SKU: "COFFEE-001",
     barcode: "123456789004",
     category: "Beverages",
     costPrice: 8.0,
@@ -52,7 +48,6 @@ const seedProducts = [
   },
   {
     name: "Extra Virgin Olive Oil",
-    SKU: "OIL-001",
     barcode: "123456789005",
     category: "Condiments",
     costPrice: 5.0,
@@ -63,7 +58,6 @@ const seedProducts = [
   },
   {
     name: "Chicken Breast",
-    SKU: "MEAT-001",
     barcode: "123456789006",
     category: "Meat",
     costPrice: 4.0,
@@ -74,7 +68,6 @@ const seedProducts = [
   },
   {
     name: "Atlantic Salmon Fillet",
-    SKU: "FISH-001",
     barcode: "123456789007",
     category: "Seafood",
     costPrice: 6.0,
@@ -85,7 +78,6 @@ const seedProducts = [
   },
   {
     name: "Fresh Spinach Bundle",
-    SKU: "VEG-001",
     barcode: "123456789008",
     category: "Produce",
     costPrice: 1.0,
@@ -96,7 +88,6 @@ const seedProducts = [
   },
   {
     name: "Greek Yogurt",
-    SKU: "YOGURT-001",
     barcode: "123456789009",
     category: "Dairy",
     costPrice: 1.5,
@@ -107,7 +98,6 @@ const seedProducts = [
   },
   {
     name: "Mixed Berry Jam",
-    SKU: "JAM-001",
     barcode: "123456789010",
     category: "Condiments",
     costPrice: 2.0,
@@ -116,11 +106,75 @@ const seedProducts = [
     lowStockThreshold: 5,
     imageUrl: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400",
   },
+  {
+    name: "Fuji Apples",
+    barcode: "123456789011",
+    category: "Produce",
+    costPrice: 0.5,
+    sellingPrice: 1.2,
+    stockQuantity: 100,
+    lowStockThreshold: 20,
+    imageUrl: "https://images.unsplash.com/photo-1560806887-1f47739d6c3d?w=400",
+  },
+  {
+    name: "Whole Grain Cereal",
+    barcode: "123456789012",
+    category: "Breakfast",
+    costPrice: 2.0,
+    sellingPrice: 4.5,
+    stockQuantity: 40,
+    lowStockThreshold: 10,
+    imageUrl: "https://images.unsplash.com/photo-1586444407321-75ed277396d9?w=400",
+  },
+  {
+    name: "Sparkling Water",
+    barcode: "123456789013",
+    category: "Beverages",
+    costPrice: 0.3,
+    sellingPrice: 0.99,
+    stockQuantity: 200,
+    lowStockThreshold: 30,
+    imageUrl: "https://images.unsplash.com/photo-1559839914-17a7ca la0bde?w=400",
+  },
+  {
+    name: "Dark Chocolate",
+    barcode: "123456789014",
+    category: "Snacks",
+    costPrice: 1.2,
+    sellingPrice: 3.99,
+    stockQuantity: 60,
+    lowStockThreshold: 15,
+    imageUrl: "https://images.unsplash.com/photo-1511381939415-36538ed0989a?w=400",
+  },
+  {
+    name: "Almond Milk",
+    barcode: "123456789015",
+    category: "Dairy",
+    costPrice: 1.8,
+    sellingPrice: 3.49,
+    stockQuantity: 30,
+    lowStockThreshold: 10,
+    imageUrl: "https://images.unsplash.com/photo-1550583724-767886667797?w=400",
+  },
 ];
 
 export async function seedDatabase() {
   try {
     await connectDB();
+
+    // Drop SKU index to prevent DuplicateKey errors after removing SKU from schema
+    try {
+      await Product.collection.dropIndex("SKU_1");
+      console.log("Dropped SKU_1 index");
+    } catch (e) {
+      // Index might not exist
+    }
+    try {
+      await Product.collection.dropIndex("sku_1");
+      console.log("Dropped sku_1 index");
+    } catch (e) {
+      // Index might not exist
+    }
 
     const adminExists = await User.findOne({ email: "admin@example.com" });
     if (!adminExists) {
@@ -134,11 +188,15 @@ export async function seedDatabase() {
       console.log("Admin user created");
     }
 
-    const productCount = await Product.countDocuments();
-    if (productCount === 0) {
-      await Product.insertMany(seedProducts);
-      console.log("Products seeded");
+    // Use upsert to avoid duplicates and add new products
+    for (const product of seedProducts) {
+      await Product.findOneAndUpdate(
+        { barcode: product.barcode },
+        product,
+        { upsert: true, new: true }
+      );
     }
+    console.log("Products seeded/updated");
 
     const saleCount = await Sale.countDocuments();
     if (saleCount === 0) {
@@ -148,7 +206,60 @@ export async function seedDatabase() {
         const items = products.map((p) => ({
           productId: p._id,
           name: p.name,
-          SKU: p.SKU,
+          quantity: 2,
+          unitPrice: p.sellingPrice,
+          costPrice: p.costPrice,
+          subtotal: p.sellingPrice * 2,
+        }));
+        const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+        const profit = items.reduce(
+          (sum, item) => sum + (item.unitPrice - item.costPrice) * item.quantity,
+          0
+        );
+
+        await Sale.create({
+          invoiceNumber: "INV-00001",
+          items,
+          subtotal,
+          tax: 0,
+          total: subtotal,
+          discount: 0,
+          paymentMode: "cash",
+          amountReceived: subtotal,
+          change: 0,
+          profit,
+          createdBy: admin._id,
+        });
+        console.log("Sample sale created");
+      }
+    }
+
+    console.log("Database seeding completed");
+  } catch (error) {
+    console.error("Seeding error:", error);
+  }
+}
+
+seedDatabase();
+
+    // Use upsert to avoid duplicates and add new products
+    for (const product of seedProducts) {
+      await Product.findOneAndUpdate(
+        { barcode: product.barcode },
+        product,
+        { upsert: true, new: true }
+      );
+    }
+    console.log("Products seeded/updated");
+
+    const saleCount = await Sale.countDocuments();
+    if (saleCount === 0) {
+      const admin = await User.findOne({ email: "admin@example.com" });
+      if (admin) {
+        const products = await Product.find().limit(3);
+        const items = products.map((p) => ({
+          productId: p._id,
+          name: p.name,
           quantity: 2,
           unitPrice: p.sellingPrice,
           costPrice: p.costPrice,

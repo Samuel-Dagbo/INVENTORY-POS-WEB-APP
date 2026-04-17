@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import {
   Search,
   Bell,
@@ -9,10 +10,11 @@ import {
   LogOut,
   User,
   Menu,
-  X,
   Package,
   ShoppingCart,
   TrendingUp,
+  AlertTriangle,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,10 +41,24 @@ interface HeaderProps {
   showMenuButton?: boolean;
 }
 
+interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  createdAt: string;
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export function Header({ user, onLogout, onMenuClick, showMenuButton = false }: HeaderProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isSearchFocused, setIsSearchFocused] = React.useState(false);
+
+  const { data: notificationsData } = useSWR("/api/notifications", fetcher, {
+    refreshInterval: 30000,
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,11 +67,8 @@ export function Header({ user, onLogout, onMenuClick, showMenuButton = false }: 
     }
   };
 
-  const recentSearches = [
-    { icon: Package, label: "Search products", path: "/dashboard/inventory" },
-    { icon: ShoppingCart, label: "New sale", path: "/dashboard/pos" },
-    { icon: TrendingUp, label: "View reports", path: "/dashboard/reports" },
-  ];
+  const notifications: NotificationItem[] = notificationsData?.notifications || [];
+  const unreadCount = notifications.length;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
@@ -95,7 +108,7 @@ export function Header({ user, onLogout, onMenuClick, showMenuButton = false }: 
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 pointer-events-none">
               <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
-                ⌘K
+                K
               </span>
             </kbd>
           </div>
@@ -110,55 +123,60 @@ export function Header({ user, onLogout, onMenuClick, showMenuButton = false }: 
                 className="relative h-10 w-10 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <Bell className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-                <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 p-0">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                 <span className="font-semibold text-sm">Notifications</span>
-                <Badge variant="secondary" className="text-xs">3 new</Badge>
+                {unreadCount > 0 && (
+                  <Badge variant="secondary" className="text-xs">{unreadCount} new</Badge>
+                )}
               </div>
               <div className="max-h-80 overflow-y-auto">
-                <DropdownMenuItem className="flex items-start gap-3 px-4 py-3 cursor-pointer">
-                  <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                {notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-slate-500">
+                    <Bell className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+                    <p className="text-sm">No new notifications</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">Low stock alert</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      5 products are running low on stock
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">2 min ago</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-3 px-4 py-3 cursor-pointer">
-                  <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">Sale completed</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      Invoice #INV-0012 completed
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">15 min ago</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-3 px-4 py-3 cursor-pointer">
-                  <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                    <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">New product added</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      iPhone 15 Pro Max added to inventory
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">1 hour ago</p>
-                  </div>
-                </DropdownMenuItem>
+                ) : (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className="flex items-start gap-3 px-4 py-3 cursor-pointer"
+                    >
+                      <div className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0",
+                        notification.type === "critical" && "bg-rose-100 dark:bg-rose-900/30",
+                        notification.type === "warning" && "bg-amber-100 dark:bg-amber-900/30",
+                        notification.type === "success" && "bg-emerald-100 dark:bg-emerald-900/30",
+                        notification.type === "info" && "bg-indigo-100 dark:bg-indigo-900/30",
+                      )}>
+                        {notification.type === "critical" && <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />}
+                        {notification.type === "warning" && <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
+                        {notification.type === "success" && <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}
+                        {notification.type === "info" && <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{notification.title}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {notification.message}
+                        </p>
+                        {notification.createdAt && (
+                          <p className="text-xs text-slate-400 mt-1">
+                            {new Date(notification.createdAt).toLocaleTimeString()}
+                          </p>
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                )}
               </div>
               <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800">
-                <Button variant="ghost" size="sm" className="w-full text-xs">
-                  View all notifications
+                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => router.push("/dashboard/inventory")}>
+                  View Inventory
                 </Button>
               </div>
             </DropdownMenuContent>

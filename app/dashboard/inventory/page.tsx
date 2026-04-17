@@ -51,16 +51,15 @@ export default function InventoryPage() {
     categories: string[];
   }>(`/api/products?limit=100`, fetcher);
 
-  const filteredProducts = (data?.products || []).filter((product) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.SKU.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.barcode && product.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+    const filteredProducts = (data?.products || []).filter((product) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.barcode && product.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
 
   const handleDelete = async () => {
     if (!deleteProduct) return;
@@ -269,14 +268,11 @@ export default function InventoryPage() {
 
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white truncate">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                        SKU: {product.SKU}
-                      </p>
-                    </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+                          {product.name}
+                        </h3>
+                      </div>
 
                     <Badge variant="secondary" className="text-xs">
                       {product.category}
@@ -383,9 +379,9 @@ export default function InventoryPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className="text-sm text-slate-600 dark:text-slate-400 font-mono">
-                          {product.SKU}
-                        </span>
+                        <div className="flex items-center justify-center">
+                          <span className="text-slate-300 dark:text-slate-700 text-xs italic">N/A</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3.5">
                         <Badge variant="secondary" size="sm">

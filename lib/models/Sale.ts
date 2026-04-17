@@ -15,7 +15,6 @@ export interface ISale extends Document {
   invoiceNumber: string;
   items: ISaleItem[];
   subtotal: number;
-  tax: number;
   total: number;
   discount: number;
   paymentMode: "cash" | "card" | "mobile_money" | "other";
@@ -41,7 +40,6 @@ const SaleSchema = new Schema<ISale>(
     invoiceNumber: { type: String, required: true, unique: true },
     items: { type: [SaleItemSchema], required: true },
     subtotal: { type: Number, required: true, min: 0 },
-    tax: { type: Number, default: 0, min: 0 },
     total: { type: Number, required: true, min: 0 },
     discount: { type: Number, default: 0, min: 0 },
     paymentMode: {
