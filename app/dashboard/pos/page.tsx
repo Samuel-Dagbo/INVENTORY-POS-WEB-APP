@@ -199,7 +199,6 @@ export default function POSPage() {
         items: cartItems.map((item) => ({
           productId: item.product._id,
           name: item.product.name,
-          SKU: item.product.SKU,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           costPrice: item.product.costPrice,

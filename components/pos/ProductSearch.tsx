@@ -111,14 +111,14 @@ export function ProductSearch({ onSelect }: ProductSearchProps) {
                   index === selectedIndex ? "bg-muted/50" : ""
                 }`}
               >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{product.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    SKU: {product.SKU} {product.barcode && `• Barcode: ${product.barcode}`}
-                  </p>
-                </div>
+               <div className="flex-1 min-w-0">
+                 <p className="font-medium truncate">{product.name}</p>
+                 <p className="text-sm text-muted-foreground">
+                   {product.barcode ? `Barcode: ${product.barcode}` : "No barcode"}
+                 </p>
+               </div>
                 <div className="text-right ml-4">
-                  <p className="font-semibold">${product.sellingPrice.toFixed(2)}</p>
+                   <p className="font-semibold">GH₵{product.sellingPrice.toFixed(2)}</p>
                   <p className={`text-sm ${product.stockQuantity <= product.lowStockThreshold ? "text-amber-600" : "text-green-600"}`}>
                     {product.stockQuantity} in stock
                   </p>
