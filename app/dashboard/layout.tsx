@@ -27,10 +27,10 @@ export default function DashboardLayout({
           const data = await res.json();
           setUser(data.user);
         } else {
-          window.location.href = "/login";
+          window.location.href = "/auth/login";
         }
       } catch {
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
       } finally {
         setIsLoading(false);
       }
@@ -45,7 +45,7 @@ export default function DashboardLayout({
         method: "POST",
         credentials: "include",
       });
-      window.location.href = "/login";
+      window.location.href = "/auth/login";
     } catch (error) {
       console.error("Logout error:", error);
     }

@@ -18,12 +18,12 @@ export default function HomePage() {
               <span className="font-bold text-xl tracking-tight">POS System</span>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
                   Sign In
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 hover:from-indigo-600 hover:via-purple-600 hover:to-indigo-600 rounded-xl">
                   Get Started
                 </Button>
@@ -58,13 +58,13 @@ export default function HomePage() {
                 cloud storage, and powerful analytics.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/login">
+                <Link href="/auth/login">
                   <Button size="lg" className="h-12 px-8 text-base bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 hover:from-indigo-600 hover:via-purple-600 hover:to-indigo-600 shadow-lg shadow-indigo-500/25 rounded-xl">
                     Start Free Trial
                     <ShoppingCart className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href="/login">
+                <Link href="/auth/login">
                   <Button size="lg" variant="outline" className="h-12 px-8 text-base rounded-xl border-slate-200 dark:border-slate-700">
                     View Demo
                   </Button>
@@ -148,7 +148,7 @@ export default function HomePage() {
             <p className="text-indigo-100 text-lg mb-8">
               Start managing your inventory and POS today. Free trial with full features.
             </p>
-            <Link href="/login">
+            <Link href="/auth/login">
               <Button size="lg" className="h-12 px-8 text-base bg-white text-indigo-600 hover:bg-indigo-50 shadow-xl rounded-xl">
                 Start Your Free Trial
               </Button>

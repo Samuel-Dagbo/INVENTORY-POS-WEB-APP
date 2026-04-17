@@ -12,12 +12,12 @@ export async function middleware(request: NextRequest) {
 
   // 1. Public routes that don't require auth
   if (
-    pathname.startsWith("/login") || 
+    pathname.startsWith("/auth/login") || 
     pathname.startsWith("/api/auth") || 
     pathname === "/"
   ) {
     // Redirect logged-in users away from login page
-    if (token && pathname.startsWith("/login")) {
+    if (token && pathname.startsWith("/auth/login")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next();
@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
 
   // 2. Protected routes
   if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   try {
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error("JWT verification failed:", error);
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 }
 
