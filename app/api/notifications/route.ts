@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
         $expr: { $lte: ["$stockQuantity", "$lowStockThreshold"] },
         stockQuantity: { $gt: 0 },
       })
-        .select("name SKU stockQuantity lowStockThreshold")
+        .select("name stockQuantity lowStockThreshold")
         .sort({ stockQuantity: 1 })
         .limit(10),
       Product.find({ stockQuantity: 0 })
-        .select("name SKU")
+        .select("name")
         .sort({ name: 1 })
         .limit(10),
       Sale.aggregate([
@@ -59,7 +59,6 @@ export async function GET(request: NextRequest) {
         data: outOfStockProducts.map((p) => ({
           id: p._id,
           name: p.name,
-          SKU: p.SKU,
         })),
         createdAt: new Date().toISOString(),
       });
@@ -74,7 +73,6 @@ export async function GET(request: NextRequest) {
         data: lowStockProducts.map((p) => ({
           id: p._id,
           name: p.name,
-          SKU: p.SKU,
           stock: p.stockQuantity,
           threshold: p.lowStockThreshold,
         })),
@@ -88,7 +86,7 @@ export async function GET(request: NextRequest) {
         id: "today_sales",
         type: "success",
         title: "Today's Sales",
-        message: `${todaySalesData.count} sales totaling $${todaySalesData.total.toFixed(2)}`,
+          message: `${todaySalesData.count} sales totaling GH₵${todaySalesData.total.toFixed(2)}`,
         createdAt: new Date().toISOString(),
       });
     }
